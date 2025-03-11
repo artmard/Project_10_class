@@ -22,7 +22,7 @@ def receive_data(sock):
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('Noutbuk-Artem.local', 9995))
+client.connect(('Noutbuk-Artem.local', 12346))
 
 threading.Thread(target=receive_data, args=(client,), daemon=True).start()
 
