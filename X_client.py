@@ -18,11 +18,11 @@ def receive_data(sock):
             break
         # Обновляем текущее состояние dot_list из JSON
         current_dot_list = json.loads(data.decode('utf-8'))
-        print(f"Updated dot_list from server: {current_dot_list}")
+        # print(f"Updated dot_list from server: {current_dot_list}")
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('Noutbuk-Artem.local', 12346))
+client.connect(('Noutbuk-Artem.local', 12343))
 
 threading.Thread(target=receive_data, args=(client,), daemon=True).start()
 
@@ -212,7 +212,8 @@ def gameloop():
                 score_x+=1  
             else:
                 massage('draw', black)
-            client.send(json.dumps('end').encode('utf-8'))     
+            client.send(json.dumps('end').encode('utf-8'))   
+            dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]  
             pygame.display.update()
             time.sleep(2)
         while game_close==True:
@@ -223,6 +224,8 @@ def gameloop():
             for event in pygame.event.get():
                 if event.type==pygame.KEYDOWN:
                     if event.key==pygame.K_a: # запуск новой игры
+                        dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]] 
+                        current_dot_list=dot_list
                         gameloop()
                 if event.type==pygame.QUIT: # закрытие окна
                     pygame.quit() # деинициализация библиотеки
@@ -241,7 +244,7 @@ def gameloop():
                 for i in dot_list:
                     if i[0]-dis_x//18<=cords_preview[0]<=i[0]+dis_x//18 and i[1]-dis_x//18<=cords_preview[1]<=i[1]+dis_x//18: 
                         mistake+=1
-                        print(mistake)
+                        # print(mistake)
                 for i in win_cords:
                     if (i[0]<cords_preview[0]<=i[0]+dis_x//3 and i[1]<cords_preview[1]<=i[1]+dis_x//3):
                         mistake+=1
@@ -257,7 +260,7 @@ def gameloop():
                 for i in win_cords:
                     if (i[0]==next_x and i[1]==next_y):
                         no_lead=True  
-                print(rule)            
+                # print(rule)            
                 if rule and next_x<=cords_preview[0]<=next_x+dis_x//3 and next_y<=cords_preview[1]<=next_y+dis_x//3 or first_move or no_lead:
                       cords=cords_preview
                       first_move=False
@@ -273,7 +276,8 @@ def gameloop():
                     today_dot.append(i-dis_x//18)
                     today_dot.append(player)
                     # запихиваем текущую точку в тапл ко всем
-                    dot_list.append(today_dot)      
+                    dot_list.append(today_dot)    
+                    # print(f"debag: {dot_list}")  
                     try:
                         client.send(json.dumps(today_dot).encode('utf-8'))
                     except Exception as e:

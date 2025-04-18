@@ -18,11 +18,11 @@ def receive_data(sock):
             break
         # Обновляем текущее состояние dot_list из JSON
         current_dot_list = json.loads(data.decode('utf-8'))
-        print(f"Updated dot_list from server: {current_dot_list}")
+        # print(f"Updated dot_list from server: {current_dot_list}")
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('Noutbuk-Artem.local', 12346))
+client.connect(('Noutbuk-Artem.local', 12343))
 
 threading.Thread(target=receive_data, args=(client,), daemon=True).start()
 
@@ -44,7 +44,7 @@ dis_x=450
 dis_y=dis_x+50
 dis=pygame.display.set_mode((dis_x,dis_y)) # создаем игровое поле
 size=40
-player=0
+player=1
 
 # счет
 global score_x
@@ -94,8 +94,7 @@ def draw_obj(dot_list): # рисует точки доставая из тапл
         else:
             cross=pygame.image.load(os.path.join('OX_PROJECT','cross.png'))
             scale_cross=pygame.transform.scale(cross,((dis_x+150)/11,dis_x/11))
-            dis.blit(scale_cross,[i[0]-dis_x/20, i[1]-dis_x/25])    
-            
+            dis.blit(scale_cross,[i[0]-dis_x/20, i[1]-dis_x/25]) 
 def gameloop():            
     global current_dot_list
     current_dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]
@@ -151,7 +150,7 @@ def gameloop():
     
     game_end=False # флаг отвечающий за конец игры
     game_close=False # стартовое меню
-    first_move=False # флаг отвечающий за первый ход, вырубает обязанность ходить в зелёные поля
+    first_move=True # флаг отвечающий за первый ход, вырубает обязанность ходить в зелёные поля
     Pause=False # флаг для октивации паузы
     timer=False # флаг для того чтобы тапл с точками не пополнялся постоянно, а только тогда когда было сделан клик мышью
     next_move=True  # флаг для проверки, что ход сделан в веделенной области 
@@ -213,7 +212,8 @@ def gameloop():
                 score_x+=1  
             else:
                 massage('draw', black)
-            client.send(json.dumps('end').encode('utf-8'))     
+            client.send(json.dumps('end').encode('utf-8'))   
+            dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]  
             pygame.display.update()
             time.sleep(2)
         while game_close==True:
@@ -224,6 +224,8 @@ def gameloop():
             for event in pygame.event.get():
                 if event.type==pygame.KEYDOWN:
                     if event.key==pygame.K_a: # запуск новой игры
+                        dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]] 
+                        current_dot_list=dot_list
                         gameloop()
                 if event.type==pygame.QUIT: # закрытие окна
                     pygame.quit() # деинициализация библиотеки
@@ -242,6 +244,7 @@ def gameloop():
                 for i in dot_list:
                     if i[0]-dis_x//18<=cords_preview[0]<=i[0]+dis_x//18 and i[1]-dis_x//18<=cords_preview[1]<=i[1]+dis_x//18: 
                         mistake+=1
+                        # print(mistake)
                 for i in win_cords:
                     if (i[0]<cords_preview[0]<=i[0]+dis_x//3 and i[1]<cords_preview[1]<=i[1]+dis_x//3):
                         mistake+=1
@@ -257,7 +260,7 @@ def gameloop():
                 for i in win_cords:
                     if (i[0]==next_x and i[1]==next_y):
                         no_lead=True  
-                print(rule)            
+                # print(rule)            
                 if rule and next_x<=cords_preview[0]<=next_x+dis_x//3 and next_y<=cords_preview[1]<=next_y+dis_x//3 or first_move or no_lead:
                       cords=cords_preview
                       first_move=False
@@ -273,13 +276,14 @@ def gameloop():
                     today_dot.append(i-dis_x//18)
                     today_dot.append(player)
                     # запихиваем текущую точку в тапл ко всем
-                    dot_list.append(today_dot)      
+                    dot_list.append(today_dot)    
+                    # print(f"debag: {dot_list}")  
                     try:
                         client.send(json.dumps(today_dot).encode('utf-8'))
                     except Exception as e:
                         print(f"Error sending data: {e}")  
                     timer=False  
-        for f in range(0,8,1):
+        for f in range(0,9,1):
             for i in range (0,dis_x//3,dis_x//9):
                 for j in range (0,dis_x//3,dis_x//9):
                     if (dot_list[-1][0]==i+f%3*(dis_x//3)+dis_x//18 and dot_list[-1][1]==j+f//3*(dis_x//3)+dis_x//18):

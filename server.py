@@ -9,7 +9,7 @@ dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]
 
 # Настройки сервера
 HOST = 'Noutbuk-Artem.local'
-PORT = 12346
+PORT = 12343
 
 
 # Словарь для хранения комнат
@@ -25,15 +25,19 @@ def handle_client(client_socket, room_id):
             data = client_socket.recv(1024)
             if not data:
                 break
+            print(json.loads(data.decode('utf-8')))
             if (json.loads(data.decode('utf-8'))=='end'):
                 dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]
+                rooms[room_id]['messages']=[[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]
+                send_updated_dot_list(room_id)
             else:    
                 # Преобразуем входные данные из JSON в список
+                dot_list = [[-100,-100,-100],[-100,-100,-100],[-100,-100,-100]]
                 new_array = json.loads(data.decode('utf-8'))
                 # Добавляем новый массив в dot_list
                 rooms[room_id]['messages'].append(new_array)
                 dot_list.append(new_array)
-                print(f"Updated dot_list: {dot_list}")
+                # print(f"Updated dot_list: {dot_list}")
                 # Отправляем обновленный dot_list обратно всем клиентам
                 send_updated_dot_list(room_id)
         except Exception as e:
